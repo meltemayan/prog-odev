@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#pragma pack(1)
+#define MAX_Student 100
 
 struct Date
 {
@@ -18,6 +20,70 @@ struct Student
 	float science;
 	float turkish;
 };
+
+
+int stdCount = 0;
+
+int cmp(const void *a, const void *b) {
+    // compare function for qsort
+    // this is the user-supplied compare function always required by qsort
+    // qsort does not know or care about the data type, only its dimensions
+    // so I cast the void pointers to our local data type
+    struct Student *aa = (struct Student*)a;
+    struct Student *bb = (struct Student*)b;
+    if(aa->studentNumber > bb->studentNumber) return 1;
+    if(aa->studentNumber < bb->studentNumber) return -1;
+    return 0;
+}
+
+int sortbyNumber(){
+	// set up
+	struct Student *data;
+	FILE *file;
+    file = fopen("ogrenci.bin", "r+");
+    if(file == NULL) {
+        printf("File error\n");                     // finish messages with a newline
+        return 1;
+    }
+
+	data = malloc(MAX_Student * sizeof(struct Student)	);
+	node = ( struct bstree * )malloc(sizeof (*node));
+
+
+	if(data == NULL) {
+        printf("Memory error\n");
+        return 1;
+    }
+
+	while(fread(file, "%d %s %s %d/%d/%d %f %f %f",&A.studentNumber,&A.name,&A.surname, &A.bdate.day, &A.bdate.month, &A.bdate.year, &A.math, &A.science, &A.turkish) == 9) {
+	    if(stdCount >= MAX_Student) {
+            printf("Too many student\n");
+            break;
+        }
+        data[stdCount].studentNumber = studentNumber;             // make a copy of the strings
+        data[stdCount].name = strdup(name);
+        data[stdCount].surname = strdup(surname);
+        data[stdCount].bdate.day = bdate.day;         // copy the data
+        data[stdCount].bdate.month = bdate.month; 
+        data[stdCount].bdate.year = bdate.year; 
+        data[stdCount].math = math;
+        data[stdCount].science = science;
+        data[stdCount].turkish = turkish;
+        stdCount++;                                     // track the number of records
+    }
+    fclose(file);
+
+	qsort(data, stdCount, sizeof *data, cmp);
+
+	// print the data
+    printf("Make Model           Year City mpg Highway mpg Average mpg\n");
+    for(c=0; c<stdCount; c++) {
+        sprintf(name, "%s %s", data[c].studentNumber, data[c].name);   // to make alignment easy
+        printf("%d %s %s \n", name, data[c].studentNumber,data[c].name, data[c].surname);
+    }
+}
+
+
 
 void ReadbyKeyboard(struct Student *X)
 {
@@ -58,18 +124,18 @@ int deleteRecord(char *fname, int i) {
 	int found=0;
 	struct Student A;
 
-	fp=fopen(fname, "rb");
+	fp=fopen(fname, "r+");
 	if (!fp) {
 		printf("%s dosyasý acilamadi", fname);
 		return -1;
 	}
-	fp_tmp=fopen("tmp.bin", "wb");
+	fp_tmp=fopen("tmp.bin", "w+");
 	if (!fp_tmp) {
 		printf("Tmp dosyasi acilamadi.");
 		return -1;
 	}
 	
-	while (fread(&A,sizeof(struct Student),1,fp) != NULL) {
+	while (fscanf(&A,sizeof(struct Student),1,fp) != NULL) {
 		if (i==A.studentNumber) {
 			printf("Kayit bulundu ve silindi.\n\n");
 			found=1;
@@ -89,6 +155,46 @@ int deleteRecord(char *fname, int i) {
 
 	return 0;
 }
+
+/*int sirala(char *fname){
+	struct Student A[100];
+	struct Student temp;
+	FILE *fp, *ft;
+	int i=0,size,j;
+	char ch; 
+ 
+	fp=fopen(fname,"r+");
+	if(fp==NULL)
+	{ 
+	printf("\n Cannot open the file \n");
+	exit(0);
+	}
+	while(ch!=EOF)
+	{
+	//fread(fp,"%d %s %s %d/%d/%d %f %f %f",&A[i].studentNumber,A[i].name,A[i].surname, &A[i].bdate.day, &A[i].bdate.month, &A[i].bdate.year, &A[i].math, &A[i].science, &A[i].turkish);  
+	fread(&A[i],sizeof(struct Student),1,fp);
+	ch=fgetc(fp); 
+	i++;  
+	} 
+	size=i-1;
+	for(i=1;i<size;++i)
+		for(j=0;j<size-i;j++)
+			if(strcmp(A[j+1].name,A[j].name)<0)
+			{
+				temp=A[j];
+				A[j]=A[j+1];
+				A[j+1]=temp;
+			}
+	ft=fopen("sorted.bin","w+");
+	for(i=0;i<size;i++)
+	//fwrite(fp,"%d %s %s %d/%d/%d %f %f %f \n",A[i].studentNumber,A[i].name,A[i].surname, A[i].bdate.day, A[i].bdate.month, A[i].bdate.year, A[i].math, A[i].science, A[i].turkish);
+	fwrite(&A[i], sizeof(struct Student), 1, ft);
+	printf("\n The file is sorted successfully and saved as sorted.bin \n \n");
+
+}*/
+
+
+
 
 
 
@@ -111,6 +217,7 @@ int main(){
 		
 		scanf("%d",&islem);
 		
+		//kayýt ekleme
 		if(islem==1){
 			FILE *fp;
 			struct Student A;
@@ -121,6 +228,7 @@ int main(){
 			fwrite(&A,sizeof(struct Student),1,fp);
 			fclose(fp);
 		}
+		//kayýt silme
 		if(islem==2)
 		{
 			int k;
@@ -128,6 +236,11 @@ int main(){
 			scanf("%d",&k);
 			deleteRecord("ogrenci.bin", k);    		
 		}
+		//kayýt güncelleme
+		if(islem==3){
+			//eklenecek
+		}
+		//kayýtlarý listele
 		if(islem==4){
 			FILE *fp;
 			int m=0,i;
@@ -136,7 +249,7 @@ int main(){
 			if(fp==NULL) fp=fopen("ogrenci.bin","w+");
 			fseek(fp,0,SEEK_END);
 			m=ftell(fp)/sizeof(struct Student);
-			printf("\nKayitli ogrenci sayisi : %d\n",(m-1));
+			printf("\nKayitli ogrenci sayisi : %d\n",m);
 			fseek(fp,0,SEEK_SET);
 			for(i=0;i<m;i++)
 			{
@@ -146,6 +259,19 @@ int main(){
 			}
 			fclose(fp);
 		}
+		//ogr numarasýna göre listeleme
+		if(islem==5){
+			//sortbyNumber();
+		}
+		//ogr adýna göre listeleme
+		if(islem==6){
+			//sirala("ogrenci.bin");
+		}
+		//sirali kayitlari yaz
+		if(islem==10){
+			
+		}
+		//çýkýþ
 		if(islem==11)
 			break;
 	}
