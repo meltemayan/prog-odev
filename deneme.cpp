@@ -38,37 +38,38 @@ int cmp(const void *a, const void *b) {
 
 int sortbyNumber(){
 	// set up
-	struct Student *data;
+	printf("fonk basi buradasiniz");
+	struct Student A;
+	struct Student * data;
 	FILE *file;
-    file = fopen("ogrenci.bin", "r+");
+    file = fopen("ogrenci.bin", "r");
     if(file == NULL) {
         printf("File error\n");                     // finish messages with a newline
         return 1;
     }
-
-	data = malloc(MAX_Student * sizeof(struct Student)	);
-	node = ( struct bstree * )malloc(sizeof (*node));
-
+	data = (struct Student *) malloc(MAX_Student * sizeof(struct Student));
+	
 
 	if(data == NULL) {
         printf("Memory error\n");
         return 1;
     }
-
-	while(fread(file, "%d %s %s %d/%d/%d %f %f %f",&A.studentNumber,&A.name,&A.surname, &A.bdate.day, &A.bdate.month, &A.bdate.year, &A.math, &A.science, &A.turkish) == 9) {
+	while(fread(&A,sizeof(struct Student),1,file)){
+	
+	//while(fscanf(file, "%d %s %s %d/%d/%d %f %f %f",&studentNumber,&A.name,&A.surname, &A.bdate.day, &A.bdate.month, &A.bdate.year, &A.math, &A.science, &A.turkish) == 9) {
 	    if(stdCount >= MAX_Student) {
             printf("Too many student\n");
             break;
         }
-        data[stdCount].studentNumber = studentNumber;             // make a copy of the strings
-        data[stdCount].name = strdup(name);
-        data[stdCount].surname = strdup(surname);
-        data[stdCount].bdate.day = bdate.day;         // copy the data
-        data[stdCount].bdate.month = bdate.month; 
-        data[stdCount].bdate.year = bdate.year; 
-        data[stdCount].math = math;
-        data[stdCount].science = science;
-        data[stdCount].turkish = turkish;
+        data[stdCount].studentNumber = A.studentNumber;             // make a copy of the strings
+        //data[stdCount].name = A.name,25,stdin;
+        //data[stdCount].surname = A.surname;
+        data[stdCount].bdate.day = A.bdate.day;         // copy the data
+        data[stdCount].bdate.month = A.bdate.month; 
+        data[stdCount].bdate.year = A.bdate.year; 
+        data[stdCount].math = A.math;
+        data[stdCount].science = A.science;
+        data[stdCount].turkish = A.turkish;
         stdCount++;                                     // track the number of records
     }
     fclose(file);
@@ -76,10 +77,11 @@ int sortbyNumber(){
 	qsort(data, stdCount, sizeof *data, cmp);
 
 	// print the data
-    printf("Make Model           Year City mpg Highway mpg Average mpg\n");
-    for(c=0; c<stdCount; c++) {
-        sprintf(name, "%s %s", data[c].studentNumber, data[c].name);   // to make alignment easy
-        printf("%d %s %s \n", name, data[c].studentNumber,data[c].name, data[c].surname);
+
+    printf("\n StdNumber\tDTarih\tMnot\tFNot\tTNot\tName\n");
+    for(int c=0; c<stdCount; c++) {
+        sprintf(A.name, "%d %d", data[c].studentNumber, data[c].math);   // to make alignment easy
+        printf("%d %d %s \n",  data[c].studentNumber,data[c].math, A.name);
     }
 }
 
@@ -135,7 +137,7 @@ int deleteRecord(char *fname, int i) {
 		return -1;
 	}
 	
-	while (fscanf(&A,sizeof(struct Student),1,fp) != NULL) {
+	while (fread(&A,sizeof(struct Student),1,fp) != NULL) {
 		if (i==A.studentNumber) {
 			printf("Kayit bulundu ve silindi.\n\n");
 			found=1;
@@ -155,8 +157,8 @@ int deleteRecord(char *fname, int i) {
 
 	return 0;
 }
-
-/*int sirala(char *fname){
+/*
+int sirala(char *fname){
 	struct Student A[100];
 	struct Student temp;
 	FILE *fp, *ft;
@@ -231,10 +233,10 @@ int main(){
 		//kayıt silme
 		if(islem==2)
 		{
-			int k;
+			int l;
 			printf("Silmek istediginiz ogrenci numarasini giriniz:");
-			scanf("%d",&k);
-			deleteRecord("ogrenci.bin", k);    		
+			scanf("%d",&l);
+			deleteRecord("ogrenci.bin", l);    		
 		}
 		//kayıt güncelleme
 		if(islem==3){
@@ -261,7 +263,7 @@ int main(){
 		}
 		//ogr numarasına göre listeleme
 		if(islem==5){
-			//sortbyNumber();
+			sortbyNumber();
 		}
 		//ogr adına göre listeleme
 		if(islem==6){
@@ -269,7 +271,22 @@ int main(){
 		}
 		//sirali kayitlari yaz
 		if(islem==10){
-			
+			FILE *fp;
+			int m=0,i;
+			struct Student A;
+			fp=fopen("sorted.bin","r+");
+			if(fp==NULL) fp=fopen("sorted.bin","w+");
+			fseek(fp,0,SEEK_END);
+			m=ftell(fp)/sizeof(struct Student);
+			printf("\nKayitli ogrenci sayisi : %d\n",m);
+			fseek(fp,0,SEEK_SET);
+			for(i=0;i<m;i++)
+			{
+				fread(&A,sizeof(struct Student),1,fp);
+				if(feof(fp)) break;
+				Display(A);
+			}
+			fclose(fp);
 		}
 		//çıkış
 		if(islem==11)
